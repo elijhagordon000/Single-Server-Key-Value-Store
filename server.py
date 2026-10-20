@@ -16,21 +16,24 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes(f"Get value: {store[key]}", "utf-8"))
         return store[key]
     def do_PUT(self):
+        
+        key = self.path.lstrip("/")
+        content_length = int(self.headers["Content-Length"])
+        request_body = self.rfile.read(content_length)
+        data  = json.loads(request_body)
+        
+        request_lock()
+        try:
+            val = data["value"]
+            store[key] = val
+            print("dict after",store)
+        except:
+            print("error message")
+        finally:
+            release_lock()
         self.send_response(200)
         self.send_header("Content-type","application/json")
         self.end_headers()
-        content_length = int(self.headers["Content-Length"])
-        print('In put')
-        key = self.path.lstrip("/")
-        print(key)
-        print("dict before",store)
-        #Editing dictionary
-        request_body = self.rfile.read(content_length)
-        data  = json.loads(request_body)
-        val = data["value"]
-        store[key] = val
-        print("dict after",store)
-        # store[key] =  
         return None
     def do_DELETE(self):
         # Eventually do not send 200 message until error checking has been done
