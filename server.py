@@ -6,16 +6,28 @@ serverPort = 8080
 store_lock = threading.Lock()
 store = {"Eli":4}
 class MyServer(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        return
+    def log_operation(self, operation, key,  status_code):
+        timestamp = time.strftime("%Y-%-m-%d %H:%M:%S")
+
+        if status_code == 200:
+            result = "SUCCESS"
+        else:
+            result = "FAILED"
+        print(f"{timestamp} | {operation} | key = {key} | {result} | {status_code}")
+
     def do_GET(self):
         key = self.path.lstrip("/")
         store_lock.acquire()
         try:
-            print("Acquired lock")
             value = store[key]
+            self.log_operation("GET", key, 200)
         except KeyError:
             self.send_response(404)
             self.send_header("Content-type", "application/json")
             self.end_headers()
+            self.log_operation("GET", key, 404)
             return
         finally:
             store_lock.release()
@@ -24,7 +36,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type","application/json")
         self.end_headers()
 
-        
+        self.wfile.write(bytes(f"Get value: {value}", "utf-8"))
 
     def do_PUT(self):
         # Key managing:
@@ -39,17 +51,18 @@ class MyServer(BaseHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
+                self.log_operation("PUT", key, 400)
                 return
 
         store_lock.acquire()
 
         try:
             store[key] = val
-            print(f"Dict after: {store}")
+            self.log_operation("PUT", key, 200)
 
         finally:
-            print("Releasing lock")
             store_lock.release()
+        
         self.send_response(200)
         self.send_header("Content-type","application/json")
         self.end_headers()
@@ -60,11 +73,12 @@ class MyServer(BaseHTTPRequestHandler):
         store_lock.acquire()  
         try:
             store.pop(key)
-            print("Dict after delete",store)
+            self.log_operation("DEL", key, 200)
         except KeyError:
             self.send_response(404)
             self.send_header("Content-type", "application/json")
             self.end_headers()
+            self.log_operation("DEL", key, 404)
             return
         finally:
             store_lock.release()
