@@ -4,8 +4,11 @@ import time, json, threading
 hostName = 'localhost'
 serverPort = 8080
 store_lock = threading.Lock()
-store = {"Eli":4}
+with open("disk.json", "r", encoding="utf-8") as file:
+    store = json.load(file)
+
 class MyServer(BaseHTTPRequestHandler):
+    
     def log_message(self, format, *args):
         return
     def log_operation(self, operation, key,  status_code):
@@ -36,7 +39,8 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type","application/json")
         self.end_headers()
 
-        self.wfile.write(bytes(f"Get value: {value}", "utf-8"))
+        response_body = {"value": value}
+        self.wfile.write(json.dumps(response_body).encode("utf-8"))
 
     def do_PUT(self):
         # Key managing:
@@ -58,6 +62,9 @@ class MyServer(BaseHTTPRequestHandler):
 
         try:
             store[key] = val
+            # Saving to disk:
+            with open("disk.json", "w", encoding="utf-8") as file:
+                json.dump(store, file, indent=4)
             self.log_operation("PUT", key, 200)
 
         finally:
@@ -66,6 +73,8 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type","application/json")
         self.end_headers()
+        
+        
 
     def do_DELETE(self):
         # Eventually do not send 200 message until error checking has been done
@@ -74,6 +83,10 @@ class MyServer(BaseHTTPRequestHandler):
         try:
             store.pop(key)
             self.log_operation("DEL", key, 200)
+            # Saving to disk:
+            print("Store after DEL",store)
+            with open("disk.json", "w", encoding="utf-8") as file:
+                json.dump(store, file, indent=4)
         except KeyError:
             self.send_response(404)
             self.send_header("Content-type", "application/json")
@@ -86,6 +99,10 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type","application/json")
         self.end_headers()
+
+    # Because Benchmark expects POST I am reusing my PUT logic in the POST function
+    def do_POST(self):
+        return self.do_PUT()
 
 
 
