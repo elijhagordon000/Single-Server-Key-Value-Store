@@ -24,7 +24,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type","application/json")
         self.end_headers()
 
-        self.wfile.write(bytes(f"Get value: {value}", "utf-8"))
+        
 
     def do_PUT(self):
         # Key managing:
