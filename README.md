@@ -133,7 +133,7 @@ PUT and DELETE operations update this file. When the server starts, the existing
 
 A video demonstration of the project, including GET, PUT, DELETE, concurrency, benchmarking, and persistence testing, is available here:
 
-**YouTube Demo:** [https://youtu.be/LjjO4nTBKdI?si=-TiFnrkuellUPnhE]
+**YouTube Demo:** https://youtu.be/LjjO4nTBKdI?si=-TiFnrkuellUPnhE
 
 ## Future Improvements
 
