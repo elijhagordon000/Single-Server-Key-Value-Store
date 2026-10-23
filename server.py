@@ -43,9 +43,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response_body).encode("utf-8"))
 
     def do_PUT(self):
-        # Key managing:
         key = self.path.lstrip("/")
-    
         try:
             content_length = int(self.headers["Content-Length"])
             request_body = self.rfile.read(content_length)
@@ -77,7 +75,6 @@ class MyServer(BaseHTTPRequestHandler):
         
 
     def do_DELETE(self):
-        # Eventually do not send 200 message until error checking has been done
         key = self.path.lstrip("/")
         store_lock.acquire()  
         try:
