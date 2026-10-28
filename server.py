@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import time, json, threading
 
-hostName = 'localhost'
+hostName = '0.0.0.0'
 serverPort = 8080
 store_lock = threading.Lock()
 with open("disk.json", "r", encoding="utf-8") as file:
