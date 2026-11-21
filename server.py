@@ -1,11 +1,18 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-import time, json, threading
+import time, json, threading, sys
 
 hostName = '0.0.0.0'
-serverPort = 8080
+serverPort = int(sys.argv[1])
+disk_file = sys.argv[2]
 store_lock = threading.Lock()
-with open("disk.json", "r", encoding="utf-8") as file:
-    store = json.load(file)
+try:
+    with open(disk_file, "r", encoding="utf-8") as file:
+        store = json.load(file)
+except: 
+    store = {}
+
+    with open(disk_file, "w", encoding="utf-8") as file:
+        json.dump(store,file)
 
 class MyServer(BaseHTTPRequestHandler):
     
@@ -22,6 +29,7 @@ class MyServer(BaseHTTPRequestHandler):
 
     def do_GET(self):
         key = self.path.lstrip("/")
+        # selected_server = consistent_hash(key)
         store_lock.acquire()
         try:
             value = store[key]
@@ -38,7 +46,6 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type","application/json")
         self.end_headers()
-
         response_body = {"value": value}
         self.wfile.write(json.dumps(response_body).encode("utf-8"))
 
